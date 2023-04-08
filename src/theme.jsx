@@ -7,11 +7,11 @@ const { definePartsStyle, defineMultiStyleConfig } =
 
 const baseStyle = definePartsStyle({
   button: {
-    background: '#EDF2F7',
-    color: '#1A202C',
+    background: '#9acdff',
+    color: '#08204e',
     borderRadius: '0.375rem',
     _hover: {
-      background: '#E2E8F0',
+      background: '#afd2ff',
       color: '#1A202C',
     },
     _dark: {
