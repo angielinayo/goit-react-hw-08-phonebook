@@ -1,41 +1,69 @@
-import { Section } from './Section/Section';
-import { Form } from './Form/Form';
-import { Contacts } from './Contacts/Contacts';
-import { Filter } from './Filter/Filter';
 import { useEffect } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
-import { fetchContacts } from 'redux/operations';
-import { selectError, selectIsLoading } from 'redux/selectors';
-import { ColorRing } from 'react-loader-spinner';
+import { useDispatch, useSelector } from 'react-redux';
+import { fetchCurrentUser } from 'redux/auth/operations';
+import Contacts from '../pages/Contacts';
+import { Route, Routes } from 'react-router-dom';
+import { RestrictedRoute } from './RestrictedRoute';
+import { PrivateRoute } from './PrivateRoute';
+import Home from 'pages/Home';
+import ModalRegister from './ModalRegister/ModalRegister';
+import ModalLogin from './ModalLogin/ModalLogin';
+import Layout from './Layout';
+import { Toaster } from 'react-hot-toast';
+import { selectIsRefreshing } from 'redux/auth/selectors';
 
 export const App = () => {
   const dispatch = useDispatch();
-  const isLoading = useSelector(selectIsLoading);
-  const error = useSelector(selectError);
+  const isRefreshing = useSelector(selectIsRefreshing);
 
   useEffect(() => {
-    dispatch(fetchContacts());
+    dispatch(fetchCurrentUser());
   }, [dispatch]);
+
   return (
     <>
-      <Section title="Phonebook">
-        <Form />
-      </Section>
-      <Section title="Contacts">
-        <Filter />
-        {isLoading && !error && (
-          <ColorRing
-            visible={true}
-            height="80"
-            width="80"
-            ariaLabel="blocks-loading"
-            wrapperStyle={{}}
-            wrapperClass="blocks-wrapper"
-            colors={['#e15b64', '#f47e60', '#f8b26a', '#abbd81', '#849b87']}
-          />
-        )}
-        <Contacts />
-      </Section>
+      <Toaster
+        containerStyle={{
+          top: 10,
+        }}
+      />
+      {isRefreshing ? null : (
+        <Routes>
+          <Route path="/" element={<Layout />}>
+            <Route index element={<Home />} />
+            <Route
+              path="/contacts"
+              element={
+                <PrivateRoute redirectTo="/login" component={<Contacts />} />
+              }
+            ></Route>
+            <Route
+              path="/register"
+              element={
+                <RestrictedRoute
+                  redirectTo="/contacts"
+                  component={<ModalRegister />}
+                />
+              }
+            ></Route>
+            <Route
+              path="/login"
+              element={
+                <RestrictedRoute
+                  redirectTo="/contacts"
+                  component={<ModalLogin />}
+                />
+              }
+            ></Route>
+            <Route
+              path="/logout"
+              element={<PrivateRoute redirectTo="/" component={<Home />} />}
+            ></Route>
+          </Route>
+
+          <Route path="*" element={<p>Path not resolved</p>} />
+        </Routes>
+      )}
     </>
   );
 };
